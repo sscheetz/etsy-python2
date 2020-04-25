@@ -5,3 +5,4 @@ dist/
 *pyc
 etsy/config.py*
 simplejson*egg
+main.py

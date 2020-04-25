@@ -1,3 +1,24 @@
+changelog (since fork)
+- made compatible with python 3.4+
+- fixed bug where oauth client didnt work because etsy rejects calls with the api_key param for clients using oauth
+- removed EtsySandboxEnv because etsy doesnt seem to have a sandbox env anymore
+- changed how multipart form data is sent to the server to make it compatible with modern requests and requests-oauth
+- removed methods on etsy oauth client for creating the oauth token. for now the credentials must be retrieved with a
+a separate workflow and passed into the etsy oauth client. This simplifies the ctor because before it wasn't obvious
+which parameters needed to be passed to the client for each use case.
+- added basic support for PUT and delete methods
+
+TODO
+- fix all tests (dont test anything that costs money like listing)
+- add at least 1 method per test per client (oauth client and unauth'd/api key client)
+- for the gets need to test a get that doenst require auth (no permission scope) and one that does
+- test PUT/DELETE - unsure if original library handled them
+- package for pip instead of easy_install
+- fix package imports - seems like there is probably a way to get relative naming working
+- maybe write generator based on etsy api metadata instead of patching at runtime
+- document the method table cache is only worth while for development. it only saves 1 call on each startup.
+- document how to use the oauth client vs the normal api client
+
 # etsy-python
 Python access to the Etsy API
 

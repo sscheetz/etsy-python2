@@ -1,13 +1,13 @@
 from __future__ import with_statement
 from contextlib import closing
-import simplejson as json
-import urllib2
-from urllib import urlencode
+import json
+from urllib.parse import urlencode
 import os
 import re
 import tempfile
+import mimetypes
 import time
-from _multipartformdataencode import encode_multipart_formdata
+import requests
 
 
 missing = object()
@@ -62,8 +62,6 @@ class TypeChecker(object):
 
 
     def check_int(self, value):
-        if isinstance(value, long):
-            return True, value
         return isinstance(value, int), value
 
     
@@ -74,7 +72,7 @@ class TypeChecker(object):
 
     
     def check_string(self, value):
-        return isinstance(value, basestring), value
+        return isinstance(value, str), value
 
 
 
@@ -246,7 +244,7 @@ class API(object):
 
         if api_key:
             self.api_key = api_key
-        else:
+        elif key_file:
             self.api_key = self._read_key(key_file)
 
         self.log = log or self._ignore
@@ -288,52 +286,49 @@ class API(object):
 
     def _read_key(self, key_file):
         key_file = key_file or os.path.join(self.etsy_home(), 'keys')
-        if not os.path.isfile(key_file):
-            raise AssertionError(
-                "The key file '%s' does not exist. Create a key file or "
-                'pass an API key explicitly.' % key_file)
+        # api_key isn't used when using the oauth client
+        # if not os.path.isfile(key_file):
+        #     raise AssertionError(
+        #         "The key file '%s' does not exist. Create a key file or "
+        #         'pass an API key explicitly.' % key_file)
 
         gs = {}
         execfile(key_file, gs)
         return gs[self.api_version]
         
 
-    def _get_url(self, url, http_method, content_type, body):
+    def _get_url(self, url, http_method, data):
         self.log("API._get_url: url = %r" % url)
-        with closing(urllib2.urlopen(url)) as f:
-            return f.read() 
+        return requests.request(http_method, url, data=data)
   
-
     def _get(self, http_method, url, **kwargs):
-        kwargs.update(dict(api_key=self.api_key))
+        if hasattr(self, 'api_key'):
+            kwargs.update(dict(api_key=self.api_key))
 
-        if http_method == 'GET':
+        data = None
+        if http_method == 'GET' or http_method == 'DELETE':
             url = '%s%s?%s' % (self.api_url, url, urlencode(kwargs))
-            body = None
-            content_type = None
-        elif http_method == 'POST':
+        elif http_method == 'POST' or http_method == 'PUT':
             url = '%s%s' % (self.api_url, url)
-            fields = []
-            files = []
 
+            data = {}
             for name, value in kwargs.items():
                 if hasattr(value, 'read'):
-                    files.append((name, value.name, value.read()))
+                    file_mimetype = mimetypes.guess_type(value.name) or 'application/octet-stream'
+                    data[name] = (value.name, value.read(), file_mimetype)
                 else:
-                    fields.append((name, str(value)))
-
-            content_type, body = encode_multipart_formdata(fields, files)
+                    data[name] = (None, str(value))
 
         self.last_url = url
-        data = self._get_url(url, http_method, content_type, body)
+        response = self._get_url(url, http_method, data)
 
         self.log('API._get: http_method = %r, url = %r, data = %r' % (http_method, url, data))
 
         try:
-            self.data = self.decode(data)
+            self.data = self.decode(response.text)
         except json.JSONDecodeError:
-            raise ValueError('Could not decode response from Etsy as JSON: %r' % data)
+            raise ValueError('Could not decode response from Etsy as JSON: status_code: %r, text: %r, url %r' \
+                % (response.status_code, response.text, response.url))
 
         self.count = self.data['count']
         return self.data['results']
-

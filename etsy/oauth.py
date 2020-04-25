@@ -1,56 +1,35 @@
-import oauth2 as oauth
 import urllib
-from cgi import parse_qsl
-from etsy_env import EtsyEnvSandbox, EtsyEnvProduction
+import requests
+from requests_oauthlib import OAuth1Session
+from etsy.etsy_env import EtsyEnvProduction
 
-EtsyOAuthToken = oauth.Token
+# TODO add support for generating the oauth credentials - may want to inherit from OAuth1Session
+class EtsyOAuthClient():
+    '''
+    You must perform the oauth authentication on your own. This client
+    expects valid oauth crendentials for the requesting user.
 
-class EtsyOAuthClient(oauth.Client):
-    def __init__(self, oauth_consumer_key, oauth_consumer_secret, etsy_env=EtsyEnvSandbox(), token=None, logger=None):
-        consumer = oauth.Consumer(oauth_consumer_key, oauth_consumer_secret)
-        super(EtsyOAuthClient, self).__init__(consumer)
-        self.request_token_url = etsy_env.request_token_url
-        self.access_token_url = etsy_env.access_token_url
-        self.signin_url = etsy_env.signin_url
-        self.token = token
+    client_key is keystring for the etsy app.
+    client_secret is the shared secret for the etsy app.
+    resource_owner_key is the oauth_token for the user whose data is being retrieved.
+    resource_owner_secret is the oauth_token_secret for the user whose data is being retrieved.
+    '''
+    def __init__(self, client_key, client_secret, resource_owner_key, resource_owner_secret, logger=None):
+        self.oauth1Session = OAuth1Session(client_key,
+                                           client_secret=client_secret,
+                                           resource_owner_key=resource_owner_key,
+                                           resource_owner_secret=resource_owner_secret)
         self.logger = logger
 
-    def get_request_token(self, **kwargs):
-        request_token_url = '%s?%s' % (self.request_token_url, urllib.urlencode(kwargs))
-        resp, content = self.request(request_token_url, 'GET')
-        return self._get_token(content)
-
-    def get_signin_url(self, **kwargs):
-        self.token = self.get_request_token(**kwargs)
-
-        if self.token is None: return None
-
-        return self.signin_url + '?' + \
-               urllib.urlencode({'oauth_token': self.token.key})
-
-    def get_access_token(self, oauth_verifier):
-        self.token.set_verifier(oauth_verifier)
-        resp, content = self.request(self.access_token_url, 'GET')
-        return self._get_token(content)
-
-    def set_oauth_verifier(self, oauth_verifier):
-        self.token = self.get_access_token(oauth_verifier)
-
-    def do_oauth_request(self, url, http_method, content_type, body):
-        if content_type and content_type != 'application/x-www-form-urlencoded':
-            resp, content = self.request(url, http_method, body=body, headers={'Content-Type': content_type})
+    def do_oauth_request(self, url, http_method, data):
+        # TODO data seems to work for PUT and POST /listing. See if data 
+        # can handle image updates if so don't need to split path.
+        if (http_method == "POST"):
+            response = self.oauth1Session.request(http_method, url, files=data)
         else:
-            resp, content = self.request(url, http_method, body=body)
+            response = self.oauth1Session.request(http_method, url, data=data)
 
         if self.logger:
-            self.logger.debug('do_oauth_request: content = %r' % content)
+            self.logger.debug('do_oauth_request: response = %r' % response)
 
-        return content
-
-    def _get_token(self, content):
-        d = dict(parse_qsl(content))
-
-        try:
-            return oauth.Token(d['oauth_token'], d['oauth_token_secret'])
-        except KeyError, e:
-            return None
+        return response
