@@ -6,3 +6,4 @@ dist/
 etsy/config.py*
 simplejson*egg
 main.py
+.vscode/

@@ -13,7 +13,6 @@ class EtsyV2(API):
         if etsy_oauth_client:
             self.etsy_oauth_client = etsy_oauth_client
             # dont want to include api_key in requests when using oauth
-            # TODO make sure this works for requests that don't require oauth integration
             api_key = None
             key_file = None
 

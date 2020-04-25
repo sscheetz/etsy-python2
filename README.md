@@ -1,3 +1,5 @@
+My goal is to make this fork the goto library for the etsy api. Started looking at this on 4/24 and am currently rapidly iterating to bring it up to speed. Be warned I will probably be rebasing quite a bit while I hack away getting this up to speed so might be difficult to contribute if by some miracle you find this and want to. With that said, feel free to try it out (I'm already using for personal projects) and file bugs for me to fix.
+
 changelog (since fork)
 - made compatible with python 3.4+
 - fixed bug where oauth client didnt work because etsy rejects calls with the api_key param for clients using oauth
