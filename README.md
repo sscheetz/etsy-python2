@@ -1,26 +1,12 @@
-My goal is to make this fork the go to library for the etsy api. Please use and file bugs
+Updated version of [etsy-python](https://github.com/mcfunley/etsy-python) with python3 compatability and support for
+the modern etsy api. Please file any bugs, suggestions, or usage questions as github issues and I will get to them
+as soon as possible.
 
-changelog (since fork)
-- made compatible with python 3.4+
-- fixed bug where oauth client didnt work because etsy rejects calls with the api_key param for clients using oauth
-- removed EtsySandboxEnv because etsy doesnt seem to have a sandbox env anymore.
-- replaced simplejson with builtin json, replaced python-oauth2 with requests-oauthlib.
-- removed methods on etsy oauth client for creating the oauth token. for now the credentials must be retrieved with a
-a separate workflow and passed into the etsy oauth client. This simplifies the ctor because before it wasn't obvious
-which parameters needed to be passed to the client for each use case.
-- added basic support for PUT and delete methods.
-- added helpers to make getting oauth credentials from etsy easier.
+Note, the tests are not yet upgraded (they should be within a few days), but I wanted to get this package out there
+in case anyone wanted to use it. I am currently successfully using it in my personal projects.
 
-TODO
-- make reading the key from a file work with python3
-- package for pip instead of easy_install
-- fix package imports - seems like there is probably a way to get relative naming working
-- document the method table cache is only worth while for development. it only saves 1 call on each startup.
-- document how to use the oauth client vs the normal api client
-- fix all tests (dont test anything that costs money like listing)
-- add at least 1 method per test per client (oauth client and unauth'd/api key client)
-- for the gets need to test a get that doenst require auth (no permission scope) and one that does
-- test PUT/DELETE - unsure if original library handled them
+See changelog at bottom of the readme for differences between etsy-python and etsy-python2. The last release
+for etsy-python was 0.3.1.
 
 # etsy-python
 Python access to the Etsy API
@@ -136,6 +122,15 @@ api = Etsy(method_cache=None)
 
 ## Version History
 
+### Version 0.4.0
+- Added python 3 compatability
+- Removed EtsySandboxEnv because etsy doesnt seem to have a sandbox env anymore.
+- Fixed broken EtsyOauthClient because etsy now rejects calls including the api_key param when oauth is being used.
+- Replaced simplejson with builtin json, replaced python-oauth2 with requests-oauthlib (python-oauth2 only supports up to python 3.4).
+- Removed the oauth credential retrieval methods from EtsyOAuthClient to make client usage easier.
+- Created EtsyOAuthHelper to make retrieving the etsy oauth credentials easier.
+- Added helpers to make getting oauth credentials from etsy easier.
+- Added basic support for PUT and DELETE methods (which the etsy api didnt have when this was originally written)
 
 ### Version 0.3.1
 * Allowing Python Longs to be passed for parameters declared as "integers" by the API 

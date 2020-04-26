@@ -5,5 +5,9 @@ dist/
 *pyc
 etsy/config.py*
 simplejson*egg
-main.py
 .vscode/
+
+main.py
+release-procedure.txt
+todo.txt
+out.json

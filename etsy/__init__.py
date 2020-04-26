@@ -3,8 +3,8 @@ from .etsy_env import EtsyEnvProduction
 
 
 __version__ = '0.4.0'
-__author__ = 'Dan McKinley'
+__author__ = 'Sean Scheetz'
 __copyright__ = 'Copyright 2010, Etsy Inc.'
 __license__ = 'GPL v3'
-__email__ = 'dan@etsy.com'
+__email__ = 'file_an_issue_on_github@gmail.com'
 

@@ -1,5 +1,5 @@
-import urllib
 import requests
+from urllib.parse import quote
 from requests_oauthlib import OAuth1Session
 from etsy.etsy_env import EtsyEnvProduction
 
@@ -42,7 +42,7 @@ class EtsyOAuthHelper:
     calls.
     '''
     @staticmethod
-    def get_request_url_and_token_secret(api_key, shared_secret, callback_uri=None, etsy_env=EtsyEnvProduction()):
+    def get_request_url_and_token_secret(api_key, shared_secret, permission_scopes=[], callback_uri=None, etsy_env=EtsyEnvProduction()):
         '''
         This method implements the first step of the Oauth1.0 3-legged work flow.
         
@@ -53,12 +53,16 @@ class EtsyOAuthHelper:
 
         api_key is the keystring from etsy
         shared_secret is the shared secret from etsy
+        permission_scopes is a list of strings. one string per requested permission scope. See link below.
+            https://www.etsy.com/developers/documentation/getting_started/oauth#section_permission_scopes
         callback_uri is a path in your application where the user should be redirected after login
         etsy_env is always prod because there is only one etsy environment as of now
         '''
         oauth = OAuth1Session(api_key, client_secret=shared_secret, callback_uri=callback_uri)
 
-        request_token_response = oauth.fetch_request_token(etsy_env.request_token_url)
+        permissions = ' '.join(permission_scopes)
+        request_token_url = etsy_env.request_token_url + '?scope=' + quote(permissions)
+        request_token_response = oauth.fetch_request_token(request_token_url)
         
         login_url = request_token_response['login_url']
         temp_oauth_token_secret = request_token_response['oauth_token_secret']

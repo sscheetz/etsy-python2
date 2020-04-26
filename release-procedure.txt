@@ -1,2 +1,0 @@
-1. Increment version in etsy/__init__.py
-2. Update changelog in README.md.
