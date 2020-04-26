@@ -12,7 +12,7 @@ class EtsyV2(API):
 
         if etsy_oauth_client:
             self.etsy_oauth_client = etsy_oauth_client
-            # dont want to include api_key in requests when using oauth
+            # including api_key in requests when using oauth causes etsy to return 403 Forbidden
             api_key = None
             key_file = None
 
