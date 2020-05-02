@@ -28,10 +28,8 @@ class Test(TestCase):
     def assertRaises(self, cls, f, *args, **kwargs):
         try:
             f(*args, **kwargs)
-        except cls, e:
+        except cls as e:
             return e.message
         else:
             name = cls.__name__ if hasattr(cls, '__name__') else str(cls)
-            raise self.failureException, "%s not raised" % name
-
-
+            raise self.failureException("%s not raised" % name)
