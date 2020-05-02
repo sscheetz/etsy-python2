@@ -1,11 +1,13 @@
-from __future__ import with_statement
-from etsy2._core import API, MethodTableCache, missing
-from cgi import parse_qs
-from urlparse import urlparse
+from urllib.parse import urlparse, parse_qs
 import os
-from util import Test
 import tempfile
 
+from etsy2._core import API, MethodTableCache, missing
+from .util import Test
+
+
+class MockResponse():
+    text = '{ "count": 1, "results": [3] }'
 
 
 class MockAPI(API):
@@ -40,8 +42,8 @@ class MockAPI(API):
                  'description': 'no pos arguments'}]
 
 
-    def _get_url(self, url, http_method, content_type, body):
-        return '{ "count": 1, "results": [3] }'
+    def _get_url(self, url, http_method, data):
+        return MockResponse()
 
 
 
@@ -88,7 +90,7 @@ class CoreTests(Test):
 
     def test_results_returned(self):
         x = self.api.testMethod(test_id='foo')
-        self.assertEquals(x, [3])
+        self.assertEqual(x, [3])
 
 
     def test_query_params(self):
@@ -100,7 +102,7 @@ class CoreTests(Test):
 
 
     def test_docstring_set(self):
-        self.assertEquals(self.api.testMethod.__doc__,
+        self.assertEqual(self.api.testMethod.__doc__,
                           'test method.')
 
 
@@ -127,9 +129,9 @@ class CoreTests(Test):
 
 
     def test_key_file_does_not_exist(self):
-        msg = self.assertRaises(AssertionError, MockAPI,
+        msg = self.assertRaises(FileNotFoundError, MockAPI,
                                 key_file='this does not exist')
-        self.assertTrue("'this does not exist' does not exist" in msg)
+        self.assertEqual(msg, 'No such file or directory')
 
 
     def test_reading_api_key(self):
