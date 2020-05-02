@@ -1,7 +1,7 @@
 import requests
 from urllib.parse import quote
 from requests_oauthlib import OAuth1Session
-from etsy.etsy_env import EtsyEnvProduction
+from .etsy_env import EtsyEnvProduction
 
 # TODO add support for generating the oauth credentials - may want to inherit from OAuth1Session
 class EtsyOAuthClient():
@@ -22,7 +22,7 @@ class EtsyOAuthClient():
         self.logger = logger
 
     def do_oauth_request(self, url, http_method, data):
-        # TODO data seems to work for PUT and POST /listing. See if data 
+        # TODO data seems to work for PUT and POST /listing. See if data
         # can handle image/actual file data updates if so don't need to split path.
         if (http_method == "POST"):
             response = self.oauth1Session.request(http_method, url, files=data)
@@ -45,7 +45,7 @@ class EtsyOAuthHelper:
     def get_request_url_and_token_secret(api_key, shared_secret, permission_scopes=[], callback_uri=None, etsy_env=EtsyEnvProduction()):
         '''
         This method implements the first step of the Oauth1.0 3-legged work flow.
-        
+
         Returns the  the login_url for the user you wish to authenticate with your app
         and the oauth_token_secret which must be passed to the get_oauth_token method
         (the next step in the oauth_workflow). You probably want to redirect the user
@@ -63,7 +63,7 @@ class EtsyOAuthHelper:
         permissions = ' '.join(permission_scopes)
         request_token_url = etsy_env.request_token_url + '?scope=' + quote(permissions)
         request_token_response = oauth.fetch_request_token(request_token_url)
-        
+
         login_url = request_token_response['login_url']
         temp_oauth_token_secret = request_token_response['oauth_token_secret']
 
@@ -72,10 +72,10 @@ class EtsyOAuthHelper:
     @staticmethod
     def get_oauth_token(api_key, shared_secret, oauth_token_secret, auth_url, etsy_env=EtsyEnvProduction()):
         '''
-        Retrieves the oauth_token and oauth_token_secret for the user. These are 
+        Retrieves the oauth_token and oauth_token_secret for the user. These are
         used along with the api_key, shared_secret, and oauth_token_secret (which
         is returned by get_request_url_and_token_secret) to create an EtsyOAuthClient.
-        
+
         api_key is the keystring from etsy
         shared_secret is the shared secret from etsy
         oauth_token_secret is the token_secret returned from get_request_url_and_token_secret
@@ -91,7 +91,7 @@ class EtsyOAuthHelper:
                   resource_owner_key=oauth_response['oauth_token'],
                   resource_owner_secret=oauth_token_secret,
                   verifier=oauth_response['oauth_verifier'])
-        
+
         oauth_tokens = oauth.fetch_access_token(etsy_env.access_token_url)
         oauth_token = oauth_tokens['oauth_token']
         oauth_token_secret = oauth_tokens['oauth_token_secret']

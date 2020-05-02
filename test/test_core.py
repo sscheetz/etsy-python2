@@ -1,12 +1,12 @@
 from __future__ import with_statement
-from etsy._core import API, MethodTableCache, missing
+from etsy2._core import API, MethodTableCache, missing
 from cgi import parse_qs
 from urlparse import urlparse
 import os
 from util import Test
 import tempfile
 
-    
+
 
 class MockAPI(API):
     api_url = 'http://host'
@@ -18,10 +18,10 @@ class MockAPI(API):
 
 
     def get_method_table(self, *args):
-        return [{'name': 'testMethod', 
-                 'uri': '/test/{test_id}', 
-                 'http_method': 'GET', 
-                 'params': { 
+        return [{'name': 'testMethod',
+                 'uri': '/test/{test_id}',
+                 'http_method': 'GET',
+                 'params': {
                      'limit': 'int',
                      'test_id': 'user_id_or_name',
                      'offset': 'int',
@@ -30,7 +30,7 @@ class MockAPI(API):
                      'blah': 'unknown type',
                      'kind': 'string',
                      },
-                 'type': 'int', 
+                 'type': 'int',
                  'description': 'test method.'},
                 {'name': 'noPositionals',
                  'uri': '/blah',
@@ -77,7 +77,7 @@ class CoreTests(Test):
 
     def test_url_params(self):
         self.api.testMethod(test_id='foo')
-        self.assertEqual(self.api.last_url, 
+        self.assertEqual(self.api.last_url,
                          'http://host/test/foo?api_key=apikey')
 
 
@@ -127,7 +127,7 @@ class CoreTests(Test):
 
 
     def test_key_file_does_not_exist(self):
-        msg = self.assertRaises(AssertionError, MockAPI, 
+        msg = self.assertRaises(AssertionError, MockAPI,
                                 key_file='this does not exist')
         self.assertTrue("'this does not exist' does not exist" in msg)
 
@@ -142,11 +142,11 @@ class CoreTests(Test):
 
 
     def test_unrecognized_kwarg(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod, 
+        msg = self.assertRaises(ValueError, self.api.testMethod,
                                 test_id=1, not_an_arg=1)
         self.assertEqual(msg, 'Unexpected argument: not_an_arg=1')
 
-    
+
     def test_unknown_parameter_type_is_passed(self):
         self.api.testMethod(test_id=1, blah=1)
         self.assertEqual(self.last_query()['blah'], ['1'])
@@ -166,7 +166,7 @@ class CoreTests(Test):
         return "Bad value for parameter %s of type '%s' - %s" % (name, t, v)
 
     def test_invalid_parameter_type_int(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod, 
+        msg = self.assertRaises(ValueError, self.api.testMethod,
                                 test_id=1, limit=5.6)
         self.assertEqual(msg, self.bad_value_msg('limit', 'int', 5.6))
 
@@ -177,23 +177,23 @@ class CoreTests(Test):
 
 
     def test_invalid_parameter_type_float(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod, 
+        msg = self.assertRaises(ValueError, self.api.testMethod,
                                 test_id=1, buzz='x')
         self.assertEqual(msg, self.bad_value_msg('buzz', 'float', 'x'))
 
-    
+
     def test_int_accepted_as_float(self):
         self.api.testMethod(test_id=1, buzz=3)
         self.assertEqual(self.last_query()['buzz'], ['3'])
 
-        
+
     def test_parameter_type_enum(self):
         self.api.testMethod(test_id=1, fizz='bar')
         self.assertEqual(self.last_query()['fizz'], ['bar'])
 
 
     def test_invalid_parameter_type_enum(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod, 
+        msg = self.assertRaises(ValueError, self.api.testMethod,
                                 test_id=1, fizz='goo')
         self.assertEqual(msg, self.bad_value_msg(
                 'fizz', 'enum(foo, bar, baz)', 'goo'))
@@ -205,14 +205,14 @@ class CoreTests(Test):
 
 
     def test_invalid_parameter_type_string(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod, 
+        msg = self.assertRaises(ValueError, self.api.testMethod,
                                 test_id=1, kind=Test)
         self.assertEqual(msg, self.bad_value_msg('kind', 'string', Test))
 
 
     def test_url_arguments_work_positionally(self):
         self.api.testMethod('foo')
-        self.assertEqual(self.api.last_url, 
+        self.assertEqual(self.api.last_url,
                          'http://host/test/foo?api_key=apikey')
 
 
@@ -221,7 +221,7 @@ class CoreTests(Test):
         self.assertEqual('Positional argument(s): (1, 2) provided, but this '
                          'method does not support them.', msg)
 
-    
+
     def test_too_many_positionals(self):
         msg = self.assertRaises(ValueError, self.api.testMethod, 1, 2)
         self.assertEqual('Too many positional arguments.', msg)
@@ -234,12 +234,12 @@ class CoreTests(Test):
 
     def test_positional_argument_duplicated_in_kwargs(self):
         msg = self.assertRaises(ValueError, self.api.testMethod, 1, test_id=2)
-        self.assertEqual('Positional argument duplicated in kwargs: test_id', 
+        self.assertEqual('Positional argument duplicated in kwargs: test_id',
                          msg)
 
 
     def test_api_key_and_key_file_both_passed(self):
-        msg = self.assertRaises(AssertionError, MockAPI, 
+        msg = self.assertRaises(AssertionError, MockAPI,
                                 api_key='x', key_file='y')
         self.assertEqual('Keys can be read from a file or passed, but not both.',
                          msg)
@@ -301,7 +301,7 @@ class MethodTableCacheTests(Test):
     def get_uncached(self):
         c = self.cache()
         return c.get()
-    
+
 
     def test_no_cache_file_returns_results(self):
         self.assertEqual(2, len(self.get_uncached()))
@@ -311,7 +311,7 @@ class MethodTableCacheTests(Test):
         self.get_uncached()
         self.assertTrue(self._cache.wrote_cache)
 
-    
+
     def test_no_cache_file(self):
         self.get_uncached()
         self.assertFalse(self._cache.used_cache)
@@ -350,8 +350,8 @@ class MethodTableCacheTests(Test):
         c = self.cache()
         c.get()
         self.assertFalse(c.used_cache)
-        
-    
+
+
     def test_none_passed_does_not_cache(self):
         self.get_cached()
         c = self.cache(method_cache=None)
@@ -372,10 +372,10 @@ class MethodTableCacheTests(Test):
         self.make_old_cache()
         self.log_tester().log.assertLine('Method table too old.')
 
-    
+
     def test_logs_when_reading_cache(self):
         api = MockAPI('key')
-        self.log_tester().log.assertLine('Reading method table cache: %s' % 
+        self.log_tester().log.assertLine('Reading method table cache: %s' %
                                          api.method_cache.filename)
 
 
@@ -387,6 +387,6 @@ class MethodTableCacheTests(Test):
 
     def test_logs_when_writing_new_cache(self):
         t = self.log_tester()
-        t.log.assertLine('Wrote method table cache: %s' % 
+        t.log.assertLine('Wrote method table cache: %s' %
                          t.method_cache.filename)
 

@@ -3,8 +3,8 @@
 import os, sys
 import oauth2 as oauth
 import webbrowser
-from etsy import Etsy, EtsyEnvProduction
-from etsy.oauth import EtsyOAuthClient
+from . import Etsy, EtsyEnvProduction
+from .oauth import EtsyOAuthClient
 
 logging_enabled = True
 etsy_env = EtsyEnvProduction()
@@ -60,7 +60,7 @@ print('findAllUserShippingTemplates => %r' % etsy_api.findAllUserShippingTemplat
 
 def testCreateListing():
     print "Creating listing..."
-    
+
     result = etsy_api.createListing(
         description=config.description,
         title=config.title,
