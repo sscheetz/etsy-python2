@@ -3,7 +3,7 @@ Updated version of [etsy-python](https://github.com/mcfunley/etsy-python) with p
 compatability and support for the modern etsy api. Please file any bugs, suggestions,
 or usage questions as github issues and I will get to them as soon as possible.
 
-Note, the tests are not yet upgraded (they should be within a few days) and I have not tested all features (notably I doubt specifying a keyfile works currently), but I wanted to get this package out there in case anyone was looking for a functional package in 2020 (and because I need it). I am currently successfully using it in my personal projects.
+Note, the tests are not yet upgraded I have not tested all features (notably I doubt specifying a keyfile works currently), but I wanted to get this package out there in case anyone was looking for a functional package in 2020. It is a WIP, but I am currently using it succesfully in my personal projects.
 
 See changelog at bottom of the readme for differences between etsy-python and etsy-python2. The
 last release for etsy-python was 0.3.1.
@@ -14,6 +14,11 @@ Python access to the Etsy API
 Originally By Dan McKinley - dan@etsy.com - [http://mcfunley.com](http://mcfunley.com)
 
 Forked by Sean Scheetz
+
+**Other Contributors**
+
+
+[James Tatum](https://github.com/jtatum)
 
 ## Installation
 
@@ -57,7 +62,7 @@ etsy_oauth = EtsyOAuthClient(client_key=api_key,
                             client_secret=shared_secret,
                             resource_owner_key=oauth_token,
                             resource_owner_secret=oauth_token_secret)
-etsy = Etsy(api_key=api_key, etsy_oauth_client=etsy_oauth)
+etsy = Etsy(etsy_oauth_client=etsy_oauth)
 ```
 
 The `EtsyOAuthClient` requires a client_key, client_secret, resource_owner_key, and resource_owner_secret to be constructed. The client_key and the client_secret are the keystring and shared secret given to you by etsy upon registering your app. The resource_owner_key and resource_owner_secret are the oauth_token and oauth_token_secret that must be retrieved by working through etsy's oauth workflow. The `EtsyOAuthHelper` exists so simplify the creation of the two aforementioned credentials. An example of how to use the `EtsyOAuthHelper` is given below.
@@ -145,6 +150,9 @@ api = Etsy(method_cache=None)
 
 
 ## Version History
+
+### Version 0.5.0
+- changed module name from etsy to etsy2 to match the package name on pypi (thanks to [James Tatum](https://github.com/jtatum)).
 
 ### Version 0.4.0
 - Added python 3 compatability
