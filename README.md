@@ -1,6 +1,6 @@
-## Intro 
-Updated version of [etsy-python](https://github.com/mcfunley/etsy-python) with python3 
-compatability and support for the modern etsy api. Please file any bugs, suggestions, 
+## Intro
+Updated version of [etsy-python](https://github.com/mcfunley/etsy-python) with python3
+compatability and support for the modern etsy api. Please file any bugs, suggestions,
 or usage questions as github issues and I will get to them as soon as possible.
 
 Note, the tests are not yet upgraded (they should be within a few days) and I have not tested all features (notably I doubt specifying a keyfile works currently), but I wanted to get this package out there in case anyone was looking for a functional package in 2020 (and because I need it). I am currently successfully using it in my personal projects.
@@ -44,7 +44,7 @@ etsy.findAllShopReceipts(shop_id=<shop_id>)
 There are two types of etsy endpoints: Those that require OAuth and those that don't. For endpoints that don't require OAuth you can use the regular etsy client provided by this library as shown below.
 
 ```python
-from etsy import Etsy
+from etsy2 import Etsy
 
 etsy = Etsy(api_key=<your-api-key>)
 etsy.findAllFeaturedListings()
@@ -118,12 +118,12 @@ published by the Etsy API. In other words, API methods are not explicitly declar
 code in this module. Instead, the list of allowable methods is downloaded and
 the patched into the API objects at runtime.
 
-This has advantages and disadvantages. It allows the module to automatically 
-receive new features, but on the other hand, this process is not as fast as 
-explicitly declared methods. 
+This has advantages and disadvantages. It allows the module to automatically
+receive new features, but on the other hand, this process is not as fast as
+explicitly declared methods.
 
 In order to speed things up, the method table json is cached locally by default.
-If a $HOME/etsy directory exists, the cache file is created there. Otherwise, it 
+If a $HOME/etsy directory exists, the cache file is created there. Otherwise, it
 is placed in the machine's temp directory. By default, this cache lasts 24 hours.
 
 The cache file can be specified when creating an API object:
@@ -157,16 +157,16 @@ api = Etsy(method_cache=None)
 - Added basic support for PUT and DELETE methods (which the etsy api didnt have when this was originally written)
 
 ### Version 0.3.1
-* Allowing Python Longs to be passed for parameters declared as "integers" by the API 
-  (thanks to [Marc Abramowitz](http://marc-abramowitz.com)). 
+* Allowing Python Longs to be passed for parameters declared as "integers" by the API
+  (thanks to [Marc Abramowitz](http://marc-abramowitz.com)).
 
 
-### Version 0.3 
-* Support for Etsy API v2 thanks to [Marc Abramowitz](http://marc-abramowitz.com). 
-* Removed support for now-dead Etsy API v1. 
+### Version 0.3
+* Support for Etsy API v2 thanks to [Marc Abramowitz](http://marc-abramowitz.com).
+* Removed support for now-dead Etsy API v1.
 
 
-### Version 0.2.1 
+### Version 0.2.1
 * Added a cache for the method table json.
 * Added a logging facility.
 
@@ -177,7 +177,7 @@ api = Etsy(method_cache=None)
 * Added support for positional arguments.
 * Added a test suite.
 * Began differentiation between API versions.
-* Added module to PyPI. 
+* Added module to PyPI.
 
-### Version 0.1 - 05-24-2010 
+### Version 0.1 - 05-24-2010
 Initial release

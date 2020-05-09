@@ -13,7 +13,7 @@ setup(
     description = 'Python access to the Etsy API',
     license = 'GPL v3',
     keywords = 'etsy api handmade',
-    packages = ['etsy'],
+    packages = ['etsy2'],
     long_description = long_description,
     long_description_content_type="text/markdown",
     test_suite = 'test',

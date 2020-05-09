@@ -1,11 +1,11 @@
 import urllib
-from etsy._core import API, missing
-from etsy.etsy_env import EtsyEnvProduction
+from ._core import API, missing
+from .etsy_env import EtsyEnvProduction
 
 class EtsyV2(API):
     api_version = 'v2'
 
-    def __init__(self, api_key='', key_file=None, method_cache=missing, 
+    def __init__(self, api_key='', key_file=None, method_cache=missing,
                  etsy_env=EtsyEnvProduction(), log=None, etsy_oauth_client=None):
         self.api_url = etsy_env.api_url
         self.etsy_oauth_client = None
