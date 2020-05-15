@@ -1,9 +1,9 @@
 ## Intro
 Updated version of [etsy-python](https://github.com/mcfunley/etsy-python) with python3
-compatability and support for the modern etsy api. Please file any bugs, suggestions,
+compatibility and support for the modern etsy api. Please file any bugs, suggestions,
 or usage questions as github issues and I will get to them as soon as possible.
 
-Note, the tests are not yet upgraded I have not tested all features (notably I doubt specifying a keyfile works currently), but I wanted to get this package out there in case anyone was looking for a functional package in 2020. It is a WIP, but I am currently using it succesfully in my personal projects.
+Note, the tests are not yet upgraded I have not tested all features (notably I doubt specifying a keyfile works currently), but I wanted to get this package out there in case anyone was looking for a functional package in 2020. It is a WIP, but I am currently using it successfully in my personal projects.
 
 See changelog at bottom of the readme for differences between etsy-python and etsy-python2. The
 last release for etsy-python was 0.3.1.
@@ -112,7 +112,7 @@ the tests, use:
 $ python setup.py test
 </pre>
 
-Some of the tests (those that actually call the Etsy API) require your API key
+Some tests (those that actually call the Etsy API) require your API key
 to be locally configured. See the Configuration section, above.
 
 
@@ -156,7 +156,7 @@ api = Etsy(method_cache=None)
 
 ### Version 0.4.0
 - Added python 3 compatability
-- Removed EtsySandboxEnv because etsy doesnt seem to have a sandbox env anymore.
+- Removed EtsySandboxEnv because etsy doesn't seem to have a sandbox env anymore.
 - Fixed broken EtsyOauthClient because etsy now rejects calls including the api_key param when oauth is being used.
 - Replaced simplejson with builtin json, replaced python-oauth2 with requests-oauthlib (python-oauth2 only supports up to python 3.4).
 - Removed the oauth credential retrieval methods from EtsyOAuthClient to make client usage easier.
