@@ -6,6 +6,7 @@ dist/
 etsy/config.py*
 simplejson*egg
 .vscode/
+.env/
 
 main.py
 release-procedure.txt

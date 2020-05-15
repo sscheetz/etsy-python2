@@ -30,7 +30,7 @@ class TypeChecker(object):
 
             if k not in params:
                 raise ValueError('Unexpected argument: %s=%s' % (k, v))
-            
+
             t = params[k]
             checker = self.checkers.get(t, None) or self.compile(t)
             ok, converted = checker(v)
@@ -63,13 +63,13 @@ class TypeChecker(object):
     def check_int(self, value):
         return isinstance(value, int), value
 
-    
+
     def check_float(self, value):
         if isinstance(value, int):
             return True, value
         return isinstance(value, float), value
 
-    
+
     def check_string(self, value):
         return isinstance(value, str), value
 
@@ -89,7 +89,7 @@ class APIMethod(object):
               'string', 'materials': 'array(string)', 'shipping_template_id':
               'int', 'quantity': 'int', 'shop_section_id': 'int'}, 'defaults':
               {'materials': None, 'shop_section_id': None}, 'type': 'Listing',
-              'description': 'Creates a new Listing'} 
+              'description': 'Creates a new Listing'}
         """
 
         self.api = api
@@ -97,7 +97,7 @@ class APIMethod(object):
         self.type_checker = self.api.type_checker
         self.__doc__ = self.spec['description']
         self.compiled = False
-    
+
 
     def __call__(self, *args, **kwargs):
         if not self.compiled:
@@ -176,7 +176,7 @@ class MethodTableCache(object):
             ms = self.api.get_method_table()
             self.cache(ms)
         return ms
-        
+
 
     def get_cached(self):
         if self.filename is None or not os.path.isfile(self.filename):
@@ -204,19 +204,19 @@ class MethodTableCache(object):
 
 
 class API(object):
-    def __init__(self, api_key='', key_file=None, method_cache=missing, 
+    def __init__(self, api_key='', key_file=None, method_cache=missing,
                  log=None):
         """
-        Creates a new API instance. When called with no arguments, 
-        reads the appropriate API key from the default ($HOME/.etsy/keys) 
-        file. 
+        Creates a new API instance. When called with no arguments,
+        reads the appropriate API key from the default ($HOME/.etsy/keys)
+        file.
 
         Parameters:
             api_key      - An explicit API key to use.
-            key_file     - A file to read the API keys from. 
-            method_cache - A file to save the API method table in for 
+            key_file     - A file to read the API keys from.
+            method_cache - A file to save the API method table in for
                            24 hours. This speeds up the creation of API
-                           objects. 
+                           objects.
             log          - An callable that accepts a string parameter.
                            Receives log messages. No logging is done if
                            this is None.
@@ -224,9 +224,9 @@ class API(object):
         Only one of api_key and key_file may be passed.
 
         If method_cache is explicitly set to None, no method table
-        caching is performed. If the parameter is not passed, a file in 
-        $HOME/.etsy is used if that directory exists. Otherwise, a 
-        temp file is used. 
+        caching is performed. If the parameter is not passed, a file in
+        $HOME/.etsy is used if that directory exists. Otherwise, a
+        temp file is used.
         """
         if not getattr(self, 'api_url', None):
             raise AssertionError('No api_url configured.')
@@ -292,14 +292,15 @@ class API(object):
         #         'pass an API key explicitly.' % key_file)
 
         gs = {}
-        execfile(key_file, gs)
+        with open(key_file) as kf:
+            exec(kf.read(), gs)
         return gs[self.api_version]
-        
+
 
     def _get_url(self, url, http_method, data):
         self.log("API._get_url: url = %r" % url)
         return requests.request(http_method, url, data=data)
-  
+
     def _get(self, http_method, url, **kwargs):
         if hasattr(self, 'api_key'):
             kwargs.update(dict(api_key=self.api_key))
