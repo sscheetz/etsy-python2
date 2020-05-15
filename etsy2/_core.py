@@ -285,11 +285,10 @@ class API(object):
 
     def _read_key(self, key_file):
         key_file = key_file or os.path.join(self.etsy_home(), 'keys')
-        # api_key isn't used when using the oauth client
-        # if not os.path.isfile(key_file):
-        #     raise AssertionError(
-        #         "The key file '%s' does not exist. Create a key file or "
-        #         'pass an API key explicitly.' % key_file)
+        if not os.path.isfile(key_file):
+            raise AssertionError(
+                "The key file '%s' does not exist. Create a key file or "
+                'pass an API key explicitly.' % key_file)
 
         gs = {}
         with open(key_file) as kf:

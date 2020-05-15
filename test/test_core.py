@@ -7,7 +7,7 @@ from .util import Test
 
 
 class MockResponse():
-    text = '{ "count": 1, "results": [3] }'
+    text = '{ "count": 2, "results": [1, 2] }'
 
 
 class MockAPI(API):
@@ -85,12 +85,12 @@ class CoreTests(Test):
 
     def test_count_saved(self):
         self.api.testMethod(test_id='foo')
-        self.assertTrue(self.api.count)
+        self.assertEqual(self.api.count, 2)
 
 
     def test_results_returned(self):
         x = self.api.testMethod(test_id='foo')
-        self.assertEqual(x, [3])
+        self.assertEqual(x, [1,2])
 
 
     def test_query_params(self):
@@ -129,9 +129,9 @@ class CoreTests(Test):
 
 
     def test_key_file_does_not_exist(self):
-        msg = self.assertRaises(FileNotFoundError, MockAPI,
+        msg = self.assertRaises(AssertionError, MockAPI,
                                 key_file='this does not exist')
-        self.assertEqual(msg, 'No such file or directory')
+        self.assertTrue("'this does not exist' does not exist" in msg)
 
 
     def test_reading_api_key(self):

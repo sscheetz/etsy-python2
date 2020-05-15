@@ -3,8 +3,6 @@ Updated version of [etsy-python](https://github.com/mcfunley/etsy-python) with p
 compatibility and support for the modern etsy api. Please file any bugs, suggestions,
 or usage questions as github issues and I will get to them as soon as possible.
 
-Note, the tests are not yet upgraded I have not tested all features (notably I doubt specifying a keyfile works currently), but I wanted to get this package out there in case anyone was looking for a functional package in 2020. It is a WIP, but I am currently using it successfully in my personal projects.
-
 See changelog at bottom of the readme for differences between etsy-python and etsy-python2. The
 last release for etsy-python was 0.3.1.
 
