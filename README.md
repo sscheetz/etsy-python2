@@ -63,20 +63,67 @@ etsy_oauth = EtsyOAuthClient(client_key=api_key,
 etsy = Etsy(etsy_oauth_client=etsy_oauth)
 ```
 
-The `EtsyOAuthClient` requires a client_key, client_secret, resource_owner_key, and resource_owner_secret to be constructed. The client_key and the client_secret are the keystring and shared secret given to you by etsy upon registering your app. The resource_owner_key and resource_owner_secret are the oauth_token and oauth_token_secret that must be retrieved by working through etsy's oauth workflow. The `EtsyOAuthHelper` exists so simplify the creation of the two aforementioned credentials. An example of how to use the `EtsyOAuthHelper` is given below.
+The `EtsyOAuthClient` requires a client_key, client_secret, resource_owner_key, and resource_owner_secret to be constructed. The client_key and the client_secret are the keystring and shared secret given to you by etsy upon registering your app. The resource_owner_key and resource_owner_secret are the oauth_token and oauth_token_secret that must be retrieved by working through etsy's oauth workflow. See the "Obtaining Etsy OAuthCredentials" section to learn how to get the oauth_token and oauth_token_secret used by the EtsyOAuthClient.
+
+## Obtaining Etsy OAuthCredentials
+
+The `EtsyOAuthHelper` exists to simplify the retrieval of the oauth_token and oauth_token_secret. The first step of the process will always be generating the login_url to which you will redirect the resource owner (user of your application). Usage is shown below.
 
 ```python
 # define permissions scopes as defined in the 'OAuth Authentication' section of the docs
 # https://www.etsy.com/developers/documentation/getting_started/oauth#section_permission_scopes
 permission_scopes = ['transactions_r', 'listings_r']
 
-# login_url is the url to redirect the user to to have them authenticate with etsy.
-# temp_oauth_token_secret is the secret used in the get_ouath_token method to retrieve permanent oauth credentials.
-# <callback_url> is the url you want etsy to redirect the user to after logging in to etsy.
-login_url, temp_oauth_token_secret = EtsyOAuthHelper.get_request_url_and_token_secret(api_key, shared_secret, permission_scopes, <callback_url>)
+# call get_request_url_and_token_secret to get the login_url and temp_oauth_token_secret
+login_url, temp_oauth_token_secret = EtsyOAuthHelper.get_request_url_and_token_secret(api_key, shared_secret, permission_scopes, callback_url)
 
-# called in the handler for <callback_url> to retrieve oauth crendentials for the user whose data you are interacting with
-oauth_token, oauth_token_secret = EtsyOAuthHelper.get_oauth_token(api_key, shared_secret, temp_oauth_token_secret, input('paste: '))
+# Note,
+# login_url is the url to redirect the user to have them authenticate with etsy.
+# temp_oauth_token_secret is the secret used in the get_ouath_token methods to retrieve permanent oauth credentials.
+# <callback_url> is the url you want etsy to redirect the user to after logging in to etsy. If null the user will be redirected to a page displaying the the verification code the user will need to manually enter.
+```
+
+After your user has told Etsy they want to give you access to their data, the next step is to trade your temp_oauth_token and temp_oauth_token_secret for the permanent oauth_token and oauth_token_secret. There are two different paths for achieving this and which one you take depends on if you specified a callback_url in your request to `EtsyOAuthHelper.get_request_url_and_token_secret`.
+
+### If a callback url was specified
+
+If you specified a callback_url, etsy will redirect the user to that url after the user grants access to your application. Etsy will append the temp_oauth_token and the verifier as query strings to callback_url. You should pass the full url the the user was redirected to to `EtsyOAuthHelper.get_oauth_token_via_auth_url` as shown below.
+
+```python
+oauth_token, oauth_token_secret = EtsyOAuthHelper.get_oauth_token_via_auth_url(api_key, shared_secret, temp_oauth_token_secret, auth_url)
+
+# Note,
+# temp_oauth_token_secret is returned from get_request_url_and_token_secret
+# auth_url is the url the user was redirected to by etsy
+```
+
+`EtsyOAuthHelper.get_oauth_token_via_auth_url` will obtain the temp_oauth_token and the verifier from the auth_url. The oauth_token and oauth_token_secret obtained from this step are the tokens expected by the `EtsyOAuthClient`.
+
+### If a callback url was not specified
+
+If you did not specify a callback url, the user will be redirected to a page owned by etsy that displays the verification code. You need to pass this verification code along with the temp_oauth_token and temp_oauth_token_secret to the `EtsyOAuthHelper.get_oauth_token_via_verifier` method to retrieve the final tokens expected by the `EtsyOAuthClient`. This is done as shown below.
+
+```python
+oauth_token, oauth_token_secret = EtsyOAuthHelper.get_oauth_token_via_verifier(api_key, shared_secret, temp_oauth_token, temp_oauth_token_secret, verifier)
+
+# Note,
+# temp_oauth_token is part of the login_url generated by get_request_url_and_token_secret
+# temp_oauth_token_secret is returned by get_request_url_and_token_secret
+# verifier is the verification code on the screen etsy redirects the user to
+```
+
+The oauth_token and oauth_token_secret obtained from this step are the tokens expected by the `EtsyOAuthClient`.
+
+It is important to note that temp_oauth_token is part of the login_url generated by get_request_url_and_token_secret. If you are going to use `EtsyOAuthHelper.get_oauth_token_via_verifier` you need to parse the temp_oauth_token from the login url before it can be passed as a parameter. This can be done as shown below.
+
+```python
+import urllib.parse as urlparse
+from urllib.parse import parse_qs
+
+login_url, temp_oauth_token_secret = EtsyOAuthHelper.get_request_url_and_token_secret(api_key, shared_secret, permission_scopes, auth_callback_url)
+
+query = urlparse.urlparse(login_url).query
+temp_oauth_token = parse_qs(query)['oauth_token'][0]
 ```
 
 ## Configuration
@@ -148,6 +195,10 @@ api = Etsy(method_cache=None)
 
 
 ## Version History
+
+### Version 0.6.0
+- Added get_oauth_token_via_verifier to EtsyOAuthHelper. This allows users to obtain oauth credentials by manually passing the verification code
+rather than using a callback_url.
 
 ### Version 0.5.0
 - changed module name from etsy to etsy2 to match the package name on pypi (thanks to [James Tatum](https://github.com/jtatum)).

@@ -60,8 +60,11 @@ class EtsyOAuthHelper:
         '''
         oauth = OAuth1Session(api_key, client_secret=shared_secret, callback_uri=callback_uri)
 
-        permissions = ' '.join(permission_scopes)
-        request_token_url = etsy_env.request_token_url + '?scope=' + quote(permissions)
+        request_token_url = etsy_env.request_token_url
+        if (permission_scopes):
+            permissions = ' '.join(permission_scopes)
+            request_token_url += '?scope=' + quote(permissions)
+
         request_token_response = oauth.fetch_request_token(request_token_url)
 
         login_url = request_token_response['login_url']
@@ -70,19 +73,23 @@ class EtsyOAuthHelper:
         return (login_url, temp_oauth_token_secret)
 
     @staticmethod
-    def get_oauth_token(api_key, shared_secret, oauth_token_secret, auth_url, etsy_env=EtsyEnvProduction()):
+    def get_oauth_token_via_auth_url(api_key, shared_secret, oauth_token_secret, auth_url, etsy_env=EtsyEnvProduction()):
         '''
         Retrieves the oauth_token and oauth_token_secret for the user. These are
         used along with the api_key, shared_secret, and oauth_token_secret (which
         is returned by get_request_url_and_token_secret) to create an EtsyOAuthClient.
 
-        api_key is the keystring from etsy
-        shared_secret is the shared secret from etsy
-        oauth_token_secret is the token_secret returned from get_request_url_and_token_secret
-        auth_url is the url used to start the current request. It is the callback_uri
-            from get_request_url_and_token_secret with the extra parameters etsy appended
-            to it after the user authenticated themselves.
-        etsy_env is always prod because there is only one etsy environment as of now
+        Differs from get_oauth_token_via_verifier as the auth_url containing the verifier and temp_oauth_token
+        is passed in as a parameter. The auth_url is the url etsy redirected the user to after they allowed your app
+        access to their data. It is the callback_url specified in get_request_url_and_token_secret with the query string
+        etsy appended to it. This function will get the verifier and oauth_token from the auth_url query parameters.
+
+        api_key is the keystring from etsy.
+        shared_secret is the shared secret from etsy.
+        oauth_token_secret is the token_secret returned from get_request_url_and_token_secret.
+        auth_url is the url etsy redirected you to e.g. it is the callback url you specified
+            in get_request_url_and_token_secret with the query string etsy appended to it.
+        etsy_env is always prod because there is only one etsy environment as of now.
         '''
         oauth = OAuth1Session(api_key, shared_secret)
         oauth_response = oauth.parse_authorization_response(auth_url)
@@ -91,6 +98,39 @@ class EtsyOAuthHelper:
                   resource_owner_key=oauth_response['oauth_token'],
                   resource_owner_secret=oauth_token_secret,
                   verifier=oauth_response['oauth_verifier'])
+
+        oauth_tokens = oauth.fetch_access_token(etsy_env.access_token_url)
+        oauth_token = oauth_tokens['oauth_token']
+        oauth_token_secret = oauth_tokens['oauth_token_secret']
+
+        return (oauth_token, oauth_token_secret)
+
+    @staticmethod
+    def get_oauth_token_via_verifier(api_key, shared_secret, temp_oauth_token, temp_oauth_token_secret, verifier, etsy_env=EtsyEnvProduction()):
+        '''
+        Retrieves the oauth_token and oauth_token_secret for the user. These are
+        used along with the api_key, shared_secret, and oauth_token_secret (which
+        is returned by get_request_url_and_token_secret) to create an EtsyOAuthClient.
+
+        Differs from get_oauth_token_via_auth_url as the temp_oauth_token and verifier are passed
+        as params rather than retrieved from the auth_url. The temp_oauth_token is the oauth_token
+        query string param from the login_url generated in get_request_url_and_token_secret.
+
+        api_key is the keystring from etsy.
+        shared_secret is the shared secret from etsy.
+        temp_oauth_token is the oauth_token query string param from the login_url generated
+            in get_request_url_and_token_secret.
+        temp_oauth_token_secret is the token_secret returned from get_request_url_and_token_secret.
+        verifier is the verification code on the page etsy redirects you to if no callback url
+            was specified in get_request_url_and_token_secret.
+        etsy_env is always prod because there is only one etsy environment as of now.
+        '''
+        oauth = OAuth1Session(api_key, shared_secret)
+        oauth = OAuth1Session(api_key,
+                  client_secret=shared_secret,
+                  resource_owner_key=temp_oauth_token,
+                  resource_owner_secret=temp_oauth_token_secret,
+                  verifier=verifier)
 
         oauth_tokens = oauth.fetch_access_token(etsy_env.access_token_url)
         oauth_token = oauth_tokens['oauth_token']
