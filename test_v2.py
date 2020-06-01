@@ -58,26 +58,29 @@ print('findAllShopListingsActive => %r' % etsy_api.findAllShopListingsActive(sho
 
 print('findAllUserShippingTemplates => %r' % etsy_api.findAllUserShippingTemplates(user_id=config.user_id))
 
-def testCreateListing():
-    print("Creating listing...")
+# TODO write UPDATE/INSERT test that doesnt cost money
+# TODO write test that excerises boolean param types
 
-    result = etsy_api.createListing(
-        description=config.description,
-        title=config.title,
-        price=config.price,
-        tags=config.tags,
-        materials=config.materials,
-        shipping_template_id=config.shipping_template_id,
-        shop_section_id=config.shop_section_id,
-        quantity=config.quantity)
-
-    listing_id = result[0]['listing_id']
-
-    print("Created listing with listing id %d" % listing_id)
-
-    result = etsy_api.uploadListingImage(listing_id=listing_id, image=config.image_file)
-
-    print("Result of uploading image: %r" % result)
-
-testCreateListing()
+#def testCreateListing():
+#    print("Creating listing...")
+#
+#    result = etsy_api.createListing(
+#        description=config.description,
+#        title=config.title,
+#        price=config.price,
+#        tags=config.tags,
+#        materials=config.materials,
+#        shipping_template_id=config.shipping_template_id,
+#        shop_section_id=config.shop_section_id,
+#        quantity=config.quantity)
+#
+#    listing_id = result[0]['listing_id']
+#
+#    print("Created listing with listing id %d" % listing_id)
+#
+#    result = etsy_api.uploadListingImage(listing_id=listing_id, image=config.image_file)
+#
+#    print("Result of uploading image: %r" % result)
+#
+#testCreateListing()
 

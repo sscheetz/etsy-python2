@@ -1,6 +1,6 @@
 from __future__ import with_statement
 import json
-from urllib.parse import urlencode
+from urllib.parse import urlencode, quote
 import os
 import re
 import tempfile
@@ -20,6 +20,7 @@ class TypeChecker(object):
             'int': self.check_int,
             'float': self.check_float,
             'string': self.check_string,
+            'boolean': self.check_boolean
             }
 
 
@@ -44,6 +45,8 @@ class TypeChecker(object):
         if t.startswith('enum'):
             f = self.compile_enum(t)
         else:
+            # TODO write checkers for complex etsy types
+            # https://www.etsy.com/developers/documentation/getting_started/api_basics#section_parameter_types
             f = self.always_ok
         self.checkers[t] = f
         return f
@@ -74,6 +77,8 @@ class TypeChecker(object):
         return isinstance(value, str), value
 
 
+    def check_boolean(self, value):
+        return isinstance(value, bool), value
 
 
 class APIMethod(object):
@@ -98,48 +103,43 @@ class APIMethod(object):
         self.__doc__ = self.spec['description']
         self.compiled = False
 
+        # HACK: etsy api metadata isn't correct for submitTracking.
+        # We patch the correct data here.
+        if self.spec['name'] == 'submitTracking':
+            self.spec['params']['shop_id'] = 'shop_id_or_name'
+            self.spec['params']['receipt_id'] = 'int'
 
-    def __call__(self, *args, **kwargs):
+
+    def __call__(self, **kwargs):
         if not self.compiled:
             self.compile()
-        return self.invoke(*args, **kwargs)
+        return self.invoke(**kwargs)
 
 
     def compile(self):
         uri = self.spec['uri']
-        self.positionals = re.findall('{(.*)}', uri)
-
-        for p in self.positionals:
-            uri = uri.replace('{%s}' % p, '%%(%s)s' % p)
-        self.uri_format = uri
-
+        self.uri_params = [uri_param for uri_param in uri.split('/') if uri_param.startswith(':')]
         self.compiled = True
 
 
-    def invoke(self, *args, **kwargs):
-        if args and not self.positionals:
-            raise ValueError(
-                'Positional argument(s): %s provided, but this method does '
-                'not support them.' % (args,))
-
-        if len(args) > len(self.positionals):
-            raise ValueError('Too many positional arguments.')
-
-        for k, v in zip(self.positionals, args):
-            if k in kwargs:
-                raise ValueError(
-                    'Positional argument duplicated in kwargs: %s' % k)
-            kwargs[k] = v
-
+    def invoke(self, **kwargs):
         ps = {}
-        for p in self.positionals:
-            if p not in kwargs:
-                raise ValueError("Required argument '%s' not provided." % p)
-            ps[p] = kwargs[p]
-            del kwargs[p]
+        for p in self.uri_params:
+            # remove the starting ":" from the param
+            kwarg_key = p[1:]
+            if p[1:] not in kwargs:
+                raise ValueError("Required argument '%s' not provided." % kwarg_key)
+            # need to remove : from ps key as weel so it can be used in type_checker
+            ps[kwarg_key] = kwargs[kwarg_key]
+            del kwargs[kwarg_key]
 
+        self.type_checker(self.spec, **ps)
         self.type_checker(self.spec, **kwargs)
-        return self.api._get(self.spec['http_method'], self.uri_format % ps, **kwargs)
+
+        applied_url = self.spec['uri']
+        for key, value in ps.items():
+            applied_url = applied_url.replace(":" + key, quote(str(value)))
+        return self.api._get(self.spec['http_method'], applied_url, **kwargs)
 
 
 
@@ -280,7 +280,8 @@ class API(object):
 
 
     def get_method_table(self):
-        return self._get('GET', '/')
+        cache = self._get('GET', '/')
+        return cache
 
 
     def _read_key(self, key_file):
@@ -306,7 +307,9 @@ class API(object):
 
         data = None
         if http_method == 'GET' or http_method == 'DELETE':
-            url = '%s%s?%s' % (self.api_url, url, urlencode(kwargs))
+            url = '%s%s' % (self.api_url, url)
+            if kwargs:
+                url += '?%s' % urlencode(kwargs)
         elif http_method == 'POST' or http_method == 'PUT':
             url = '%s%s' % (self.api_url, url)
 

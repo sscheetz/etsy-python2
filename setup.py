@@ -7,7 +7,7 @@ long_description = open(os.path.join(this_dir, 'README.md'), 'r').read()
 
 setup(
     name = 'etsy2',
-    version = '0.6.0',
+    version = '0.7.0',
     author = 'Sean Scheetz',
     author_email = 'contact_through_github@gmail.com',
     description = 'Python access to the Etsy API',

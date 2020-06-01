@@ -21,7 +21,7 @@ class MockAPI(API):
 
     def get_method_table(self, *args):
         return [{'name': 'testMethod',
-                 'uri': '/test/{test_id}',
+                 'uri': '/test/:test_id',
                  'http_method': 'GET',
                  'params': {
                      'limit': 'int',
@@ -31,15 +31,16 @@ class MockAPI(API):
                      'buzz': 'float',
                      'blah': 'unknown type',
                      'kind': 'string',
+                     'duh': 'boolean'
                      },
                  'type': 'int',
                  'description': 'test method.'},
-                {'name': 'noPositionals',
+                {'name': 'method2',
                  'uri': '/blah',
                  'http_method': 'GET',
                  'params': {'foo': 'int'},
                  'type': 'int',
-                 'description': 'no pos arguments'}]
+                 'description': 'so we can assert against 2 for test'}]
 
 
     def _get_url(self, url, http_method, data):
@@ -65,7 +66,7 @@ class MockLog(object):
 
 class CoreTests(Test):
     def setUp(self):
-        self.api = MockAPI('apikey', log=MockLog(self))
+        self.api = MockAPI('apikey', log=MockLog(self), method_cache=None)
 
 
     def last_query(self):
@@ -154,9 +155,19 @@ class CoreTests(Test):
         self.assertEqual(self.last_query()['blah'], ['1'])
 
 
+    def test_missing_required_param(self):
+        msg = self.assertRaises(ValueError, self.api.testMethod, limit=5.6)
+        self.assertEqual(msg, "Required argument 'test_id' not provided.")
+
+
     def test_parameter_type_int(self):
         self.api.testMethod(test_id=1, limit=5)
         self.assertEqual(self.last_query()['limit'], ['5'])
+
+
+    def test_parameter_type_boolean(self):
+        self.api.testMethod(test_id=1, duh=True)
+        self.assertEqual(self.last_query()['duh'], ['True'])
 
 
     def bad_value_msg(self, name, t, v):
@@ -205,34 +216,6 @@ class CoreTests(Test):
         msg = self.assertRaises(ValueError, self.api.testMethod,
                                 test_id=1, kind=Test)
         self.assertEqual(msg, self.bad_value_msg('kind', 'string', Test))
-
-
-    def test_url_arguments_work_positionally(self):
-        self.api.testMethod('foo')
-        self.assertEqual(self.api.last_url,
-                         'http://host/test/foo?api_key=apikey')
-
-
-    def test_method_with_no_positionals_doesnt_accept_them(self):
-        msg = self.assertRaises(ValueError, self.api.noPositionals, 1, 2)
-        self.assertEqual('Positional argument(s): (1, 2) provided, but this '
-                         'method does not support them.', msg)
-
-
-    def test_too_many_positionals(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod, 1, 2)
-        self.assertEqual('Too many positional arguments.', msg)
-
-
-    def test_positional_argument_not_provided(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod)
-        self.assertEqual("Required argument 'test_id' not provided.", msg)
-
-
-    def test_positional_argument_duplicated_in_kwargs(self):
-        msg = self.assertRaises(ValueError, self.api.testMethod, 1, test_id=2)
-        self.assertEqual('Positional argument duplicated in kwargs: test_id',
-                         msg)
 
 
     def test_api_key_and_key_file_both_passed(self):

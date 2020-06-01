@@ -204,6 +204,10 @@ api = Etsy(method_cache=None)
 
 ## Version History
 
+### Version 0.7.0
+- Url parameters now sent in the url instead of the query string.
+- Patched metadata for submitTracking during runtime to workaround inconsistency in etsy api metadata.
+
 ### Version 0.6.0
 - Added get_oauth_token_via_verifier to EtsyOAuthHelper. This allows users to obtain oauth credentials by manually passing the verification code
 rather than using a callback_url.
