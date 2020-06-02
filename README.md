@@ -206,6 +206,7 @@ api = Etsy(method_cache=None)
 
 ### Version 0.7.0
 - Url parameters now sent in the url instead of the query string.
+- Url parameters now passed like every other parameter instead of optionally being able to be passed as positional arguments. Improves api consistency and cuts down on error cases.
 - Patched metadata for submitTracking during runtime to workaround inconsistency in etsy api metadata.
 
 ### Version 0.6.0
