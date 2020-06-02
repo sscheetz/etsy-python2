@@ -9,7 +9,7 @@ last release for etsy-python was 0.3.1.
 ## etsy-python2
 Python access to the Etsy API
 
-Originally By Dan McKinley - dan@etsy.com - [http://mcfunley.com](http://mcfunley.com)
+Originally by Dan McKinley - dan@etsy.com - [http://mcfunley.com](http://mcfunley.com)
 
 Forked by Sean Scheetz
 
